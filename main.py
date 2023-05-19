@@ -1,18 +1,33 @@
 import requests
-import json
+import random
+from gtts import gTTS
+import os
+from pygame import mixer
 
-def obtener_palabra(api_key):
-    response = requests.get(f"http://api.wordnik.com/v4/words.json/randomWord?api_key={api_key}")
-    if response.status_code == 200:
-        data = json.loads(response.text)
-        return data["word"]
-    else:
-        return "Error al obtener la palabra"
+def obtener_palabra():
+    response = requests.get("https://api.datamuse.com/words?ml=ringing")
+    palabras = response.json()
+    return random.choice(palabras)["word"]
 
 def main():
-    api_key = "your_api_key"  # Reemplaza esto con tu clave API
-    palabra = obtener_palabra(api_key)
+    palabra = obtener_palabra()
     print(f"La palabra aleatoria es: {palabra}")
+
+    # Convertir la palabra en audio
+    tts = gTTS(text=palabra, lang='en')
+    tts.save("palabra.mp3")
+
+    # Reproducir el audio
+    mixer.init()
+    mixer.music.load("palabra.mp3")
+    mixer.music.play()
+
+    # Esperar hasta que termine el audio
+    while mixer.music.get_busy():
+        continue
+
+    # Borrar el archivo de audio
+    os.remove("palabra.mp3")
 
 if __name__ == "__main__":
     main()
